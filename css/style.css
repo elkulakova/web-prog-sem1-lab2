@@ -61,7 +61,8 @@ body {
 }
 
 .task-form__input,
-.controls__search {
+.controls__search,
+.task-item__edit-title {
   flex: 1 1 220px;
   min-width: 0;
   padding: 0.55rem 0.7rem;
@@ -74,7 +75,8 @@ body {
 .controls__sort,
 .task-form__submit,
 .filter-btn,
-.task-item__btn {
+.task-item__btn,
+.task-item__edit-date {
   padding: 0.55rem 0.75rem;
   border: 1px solid #b8c0d0;
   background: #fff;
@@ -82,10 +84,26 @@ body {
   cursor: pointer;
 }
 
+.task-item__edit-date {
+  cursor: text;
+}
+
 .task-form__submit {
   background: #2563eb;
   border-color: #2563eb;
   color: #fff;
+}
+
+.form-message {
+  flex: 1 1 100%;
+  margin: 0;
+  min-height: 1.25em;
+  font-size: 0.9rem;
+  color: transparent;
+}
+
+.form-message--error {
+  color: #b42318;
 }
 
 .filter-group {
@@ -109,6 +127,13 @@ body {
   gap: 0.65rem;
 }
 
+.task-list__empty {
+  padding: 0.75rem;
+  color: #666;
+  border: 1px dashed #c5ccd8;
+  background: #fafafa;
+}
+
 .task-item {
   display: flex;
   flex-wrap: wrap;
@@ -117,6 +142,10 @@ body {
   padding: 0.75rem;
   border: 1px solid #d7dde8;
   background: #fff;
+}
+
+.task-item--editing {
+  border-color: #2563eb;
 }
 
 .task-item--completed .task-item__title {
@@ -131,9 +160,19 @@ body {
   gap: 0.15rem;
 }
 
-.task-item__date {
+.task-item__content--edit {
+  gap: 0.5rem;
+}
+
+.task-item__date,
+.task-item__confirm {
   font-size: 0.85rem;
   color: #666;
+}
+
+.task-item__confirm {
+  margin: 0;
+  color: #b42318;
 }
 
 .task-item__actions {
@@ -141,7 +180,18 @@ body {
   gap: 0.4rem;
 }
 
-.task-item__btn:disabled,
+.task-item__btn--confirm-delete {
+  background: #b42318;
+  border-color: #b42318;
+  color: #fff;
+}
+
+.task-item__btn--save {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
 .task-item__checkbox:disabled {
   cursor: not-allowed;
   opacity: 0.65;

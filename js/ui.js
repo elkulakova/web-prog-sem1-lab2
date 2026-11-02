@@ -29,12 +29,15 @@ function createElement(tag, { className, text, attrs = {}, dataset = {}, childre
   return el;
 }
 
-function createTaskElement(task) {
+function createTaskElement(task, { editingId = null, pendingDeleteId = null } = {}) {
+  const isEditing = editingId === task.id;
+  const isPendingDelete = pendingDeleteId === task.id;
+
   const item = createElement('li', {
-    className: `task-item${task.completed ? ' task-item--completed' : ''}`,
+    className: `task-item${task.completed ? ' task-item--completed' : ''}${isEditing ? ' task-item--editing' : ''}`,
     dataset: { id: task.id },
     attrs: {
-      draggable: 'true',
+      draggable: String(!isEditing && !isPendingDelete),
     },
   });
 
@@ -43,58 +46,146 @@ function createTaskElement(task) {
     attrs: {
       type: 'checkbox',
       checked: task.completed,
-      disabled: true,
-      'aria-label': 'статус выполнения',
+      disabled: isEditing || isPendingDelete,
     },
   });
 
-  const content = createElement('div', {
-    className: 'task-item__content',
-    children: [
-      createElement('span', {
-        className: 'task-item__title',
-        text: task.title,
-      }),
-      createElement('time', {
-        className: 'task-item__date',
-        text: task.date || 'без даты',
-        attrs: task.date ? { datetime: task.date } : {},
-      }),
-    ],
-  });
+  let content;
+  let actions;
 
-  const actions = createElement('div', {
-    className: 'task-item__actions',
-    children: [
-      createElement('button', {
-        className: 'task-item__btn task-item__btn--edit',
-        text: 'изменить',
-        attrs: {
-          type: 'button',
-          disabled: true,
-        },
-      }),
-      createElement('button', {
-        className: 'task-item__btn task-item__btn--delete',
-        text: 'удалить',
-        attrs: {
-          type: 'button',
-          disabled: true,
-        },
-      }),
-    ],
-  });
+  if (isEditing) {
+    content = createElement('div', {
+      className: 'task-item__content task-item__content--edit',
+      children: [
+        createElement('input', {
+          className: 'task-item__edit-title',
+          attrs: {
+            type: 'text',
+            value: task.title,
+          },
+        }),
+        createElement('input', {
+          className: 'task-item__edit-date',
+          attrs: {
+            type: 'date',
+            value: task.date || '',
+          },
+        }),
+      ],
+    });
+
+    actions = createElement('div', {
+      className: 'task-item__actions',
+      children: [
+        createElement('button', {
+          className: 'task-item__btn task-item__btn--save',
+          text: 'сохранить',
+          attrs: { type: 'button' },
+          dataset: { action: 'save-edit' },
+        }),
+        createElement('button', {
+          className: 'task-item__btn task-item__btn--cancel',
+          text: 'отмена',
+          attrs: { type: 'button' },
+          dataset: { action: 'cancel-edit' },
+        }),
+      ],
+    });
+  } else if (isPendingDelete) {
+    content = createElement('div', {
+      className: 'task-item__content',
+      children: [
+        createElement('span', {
+          className: 'task-item__title',
+          text: task.title,
+        }),
+        createElement('p', {
+          className: 'task-item__confirm',
+          text: 'удалить эту задачу?',
+        }),
+      ],
+    });
+
+    actions = createElement('div', {
+      className: 'task-item__actions',
+      children: [
+        createElement('button', {
+          className: 'task-item__btn task-item__btn--confirm-delete',
+          text: 'да',
+          attrs: { type: 'button' },
+          dataset: { action: 'confirm-delete' },
+        }),
+        createElement('button', {
+          className: 'task-item__btn task-item__btn--cancel',
+          text: 'нет',
+          attrs: { type: 'button' },
+          dataset: { action: 'cancel-delete' },
+        }),
+      ],
+    });
+  } else {
+    content = createElement('div', {
+      className: 'task-item__content',
+      children: [
+        createElement('span', {
+          className: 'task-item__title',
+          text: task.title,
+        }),
+        createElement('time', {
+          className: 'task-item__date',
+          text: task.date || 'без даты',
+          attrs: task.date ? { datetime: task.date } : {},
+        }),
+      ],
+    });
+
+    actions = createElement('div', {
+      className: 'task-item__actions',
+      children: [
+        createElement('button', {
+          className: 'task-item__btn task-item__btn--edit',
+          text: 'изменить',
+          attrs: { type: 'button' },
+          dataset: { action: 'edit' },
+        }),
+        createElement('button', {
+          className: 'task-item__btn task-item__btn--delete',
+          text: 'удалить',
+          attrs: { type: 'button' },
+          dataset: { action: 'delete' },
+        }),
+      ],
+    });
+  }
 
   item.append(checkbox, content, actions);
   return item;
 }
 
-function renderTaskList(tasks) {
+function renderTaskList(tasks, uiState = {}) {
   const list = document.getElementById('task-list');
   if (!list) return;
 
-  const items = tasks.map(createTaskElement);
+  if (!tasks.length) {
+    list.replaceChildren(
+      createElement('li', {
+        className: 'task-list__empty',
+        text: 'задач пока нет',
+      })
+    );
+    return;
+  }
+
+  const items = tasks.map((task) => createTaskElement(task, uiState));
   list.replaceChildren(...items);
+}
+
+function setFormMessage(message) {
+  const box = document.getElementById('form-message');
+  if (!box) return;
+
+  box.textContent = message || '';
+  box.className = message ? 'form-message form-message--error' : 'form-message';
 }
 
 function renderApp() {
@@ -127,7 +218,6 @@ function renderApp() {
       placeholder: 'моя задача...',
       required: true,
       autocomplete: 'off',
-      'aria-label': 'текст задачи',
     },
   });
 
@@ -137,7 +227,6 @@ function renderApp() {
       type: 'date',
       id: 'task-date',
       name: 'date',
-      'aria-label': 'дата задачи',
     },
   });
 
@@ -147,11 +236,15 @@ function renderApp() {
     attrs: { type: 'submit' },
   });
 
-  form.append(inputTask, inputDate, addBtn);
+  const formMessage = createElement('p', {
+    className: 'form-message',
+    attrs: { id: 'form-message' },
+  });
+
+  form.append(inputTask, inputDate, addBtn, formMessage);
 
   const controls = createElement('section', {
     className: 'controls',
-    attrs: { 'aria-label': 'фильтры и поиск' },
   });
 
   const searchInput = createElement('input', {
@@ -160,13 +253,11 @@ function renderApp() {
       type: 'search',
       id: 'search-input',
       placeholder: 'поиск задач...',
-      'aria-label': 'поиск по названию',
     },
   });
 
   const filterGroup = createElement('div', {
     className: 'filter-group',
-    attrs: { role: 'group', 'aria-label': 'фильтр по статусу' },
   });
 
   const filters = [
@@ -188,10 +279,7 @@ function renderApp() {
 
   const sortSelect = createElement('select', {
     className: 'controls__sort',
-    attrs: {
-      id: 'sort-select',
-      'aria-label': 'сортировка по дате',
-    },
+    attrs: { id: 'sort-select' },
   });
 
   [
@@ -210,7 +298,6 @@ function renderApp() {
 
   const taskListSection = createElement('section', {
     className: 'task-section',
-    attrs: { 'aria-label': 'список задач' },
     children: [
       createElement('ul', {
         className: 'task-list',
