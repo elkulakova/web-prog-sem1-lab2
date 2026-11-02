@@ -1,1 +1,4 @@
-/* Application logic and event handlers */
+document.addEventListener('DOMContentLoaded', () => {
+  renderApp();
+  renderTaskList(DEMO_TASKS);
+});
