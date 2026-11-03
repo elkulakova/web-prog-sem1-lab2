@@ -1,6 +1,9 @@
 let todos = DEMO_TASKS.map((task) => ({ ...task }));
 let editingId = null;
 let pendingDeleteId = null;
+let currentFilter = 'all';
+let currentSort = 'date-desc';
+let searchQuery = '';
 
 function createTaskId() {
   return `task-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
@@ -10,8 +13,51 @@ function getUiState() {
   return { editingId, pendingDeleteId };
 }
 
+function getVisibleTodos() {
+  let list = todos.slice();
+
+  if (currentFilter === 'active') {
+    list = list.filter((task) => !task.completed);
+  } else if (currentFilter === 'completed') {
+    list = list.filter((task) => task.completed);
+  }
+
+  const query = searchQuery.trim().toLowerCase();
+  if (query) {
+    list = list.filter((task) => task.title.toLowerCase().includes(query));
+  }
+
+  list.sort((a, b) => {
+    const dateA = a.date || '';
+    const dateB = b.date || '';
+
+    if (dateA === dateB) {
+      return a.order - b.order;
+    }
+    if (!dateA) return 1;
+    if (!dateB) return -1;
+
+    if (currentSort === 'date-asc') {
+      return dateA.localeCompare(dateB);
+    }
+    return dateB.localeCompare(dateA);
+  });
+
+  return list;
+}
+
+function updateFilterButtons() {
+  document.querySelectorAll('.filter-btn').forEach((btn) => {
+    if (btn.dataset.filter === currentFilter) {
+      btn.classList.add('filter-btn--active');
+    } else {
+      btn.classList.remove('filter-btn--active');
+    }
+  });
+}
+
 function refresh() {
-  renderTaskList(todos, getUiState());
+  renderTaskList(getVisibleTodos(), getUiState());
 }
 
 function addTask(title, date) {
@@ -58,6 +104,9 @@ function toggleTask(id) {
 function bindEvents() {
   const form = document.getElementById('task-form');
   const list = document.getElementById('task-list');
+  const searchInput = document.getElementById('search-input');
+  const sortSelect = document.getElementById('sort-select');
+  const filterGroup = document.querySelector('.filter-group');
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -77,6 +126,25 @@ function bindEvents() {
     addTask(title, date);
     form.reset();
     titleInput.focus();
+  });
+
+  searchInput.addEventListener('input', () => {
+    searchQuery = searchInput.value;
+    refresh();
+  });
+
+  sortSelect.addEventListener('change', () => {
+    currentSort = sortSelect.value;
+    refresh();
+  });
+
+  filterGroup.addEventListener('click', (event) => {
+    const btn = event.target.closest('.filter-btn');
+    if (!btn) return;
+
+    currentFilter = btn.dataset.filter;
+    updateFilterButtons();
+    refresh();
   });
 
   list.addEventListener('change', (event) => {
@@ -152,5 +220,6 @@ function bindEvents() {
 document.addEventListener('DOMContentLoaded', () => {
   renderApp();
   bindEvents();
+  updateFilterButtons();
   refresh();
 });
