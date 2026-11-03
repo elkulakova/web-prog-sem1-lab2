@@ -7,7 +7,7 @@ function loadTodos() {
   try {
     const data = JSON.parse(raw);
     return Array.isArray(data) ? data : null;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
