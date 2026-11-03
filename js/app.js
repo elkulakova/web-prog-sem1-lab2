@@ -1,5 +1,5 @@
 const savedTodos = loadTodos();
-let todos = savedTodos ? savedTodos : INITIAL_TASKS.slice();
+let todos = savedTodos ? savedTodos : [];
 let editingId = null;
 let pendingDeleteId = null;
 let currentFilter = 'all';
