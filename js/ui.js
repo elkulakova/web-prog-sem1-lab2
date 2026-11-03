@@ -228,6 +228,12 @@ function renderApp() {
     attrs: { id: 'task-form', novalidate: true },
   });
 
+  const labelTask = createElement('label', {
+    className: 'visually-hidden',
+    text: 'текст задачи',
+    attrs: { for: 'task-text' },
+  });
+
   const inputTask = createElement('input', {
     className: 'task-form__input',
     attrs: {
@@ -238,6 +244,12 @@ function renderApp() {
       required: true,
       autocomplete: 'off',
     },
+  });
+
+  const labelDate = createElement('label', {
+    className: 'visually-hidden',
+    text: 'дата задачидачи',
+    attrs: { for: 'task-date' },
   });
 
   const inputDate = createElement('input', {
@@ -260,10 +272,16 @@ function renderApp() {
     attrs: { id: 'form-message' },
   });
 
-  form.append(inputTask, inputDate, addBtn, formMessage);
+  form.append(labelTask, inputTask, labelDate, inputDate, addBtn, formMessage);
 
   const controls = createElement('section', {
     className: 'controls',
+  });
+
+  const labelSearch = createElement('label', {
+    className: 'visually-hidden',
+    text: 'поиск задач',
+    attrs: { for: 'search-input' },
   });
 
   const searchInput = createElement('input', {
@@ -297,6 +315,12 @@ function renderApp() {
     );
   });
 
+  const labelSort = createElement('label', {
+    className: 'visually-hidden',
+    text: 'сортировка задач',
+    attrs: { for: 'sort-select' },
+  });
+
   const sortSelect = createElement('select', {
     className: 'controls__sort',
     attrs: { id: 'sort-select' },
@@ -316,7 +340,7 @@ function renderApp() {
     );
   });
 
-  controls.append(searchInput, filterGroup, sortSelect);
+  controls.append(labelSearch, searchInput, filterGroup, labelSort, sortSelect);
 
   const taskListSection = createElement('section', {
     className: 'task-section',
