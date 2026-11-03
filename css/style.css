@@ -132,7 +132,6 @@ button {
   background: var(--surface-solid);
 }
 
-/* iOS Safari: native date "pill" overflows the field */
 .task-form__date,
 .task-item__edit-date {
   display: block;

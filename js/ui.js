@@ -248,7 +248,7 @@ function renderApp() {
 
   const labelDate = createElement('label', {
     className: 'visually-hidden',
-    text: 'дата задачидачи',
+    text: 'дата задачи',
     attrs: { for: 'task-date' },
   });
 
