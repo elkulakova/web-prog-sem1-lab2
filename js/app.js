@@ -1,4 +1,5 @@
-let todos = DEMO_TASKS.map((task) => ({ ...task }));
+const savedTodos = loadTodos();
+let todos = savedTodos ? savedTodos : INITIAL_TASKS.slice();
 let editingId = null;
 let pendingDeleteId = null;
 let currentFilter = 'all';
@@ -58,6 +59,7 @@ function updateFilterButtons() {
 
 function refresh() {
   renderTaskList(getVisibleTodos(), getUiState());
+  saveTodos(todos);
 }
 
 function addTask(title, date) {
