@@ -124,11 +124,35 @@ button {
 .filter-btn,
 .task-item__btn {
   width: 100%;
+  max-width: 100%;
   min-width: 0;
   padding: 0.6rem 0.75rem;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   background: var(--surface-solid);
+}
+
+/* iOS Safari: native date "pill" overflows the field */
+.task-form__date,
+.task-item__edit-date {
+  display: block;
+  overflow: hidden;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.task-form__date::-webkit-date-and-time-value,
+.task-item__edit-date::-webkit-date-and-time-value {
+  text-align: left;
+  margin: 0;
+  min-width: 0;
+}
+
+.task-form__date::-webkit-datetime-edit,
+.task-item__edit-date::-webkit-datetime-edit {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .task-form__submit {
@@ -245,6 +269,8 @@ button {
 
 .task-item__content--edit {
   gap: 0.5rem;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .task-item__title {
