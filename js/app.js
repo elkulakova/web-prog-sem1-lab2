@@ -3,8 +3,9 @@ let todos = savedTodos ? savedTodos : INITIAL_TASKS.slice();
 let editingId = null;
 let pendingDeleteId = null;
 let currentFilter = 'all';
-let currentSort = 'date-desc';
+let currentSort = 'manual';
 let searchQuery = '';
+let dragId = null;
 
 function createTaskId() {
   return `task-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
@@ -29,6 +30,10 @@ function getVisibleTodos() {
   }
 
   list.sort((a, b) => {
+    if (currentSort === 'manual') {
+      return a.order - b.order;
+    }
+
     const dateA = a.date || '';
     const dateB = b.date || '';
 
@@ -100,6 +105,37 @@ function toggleTask(id) {
   if (!task) return;
 
   task.completed = !task.completed;
+  refresh();
+}
+
+function clearDragOver() {
+  document.querySelectorAll('.task-item--drag-over').forEach((el) => {
+    el.classList.remove('task-item--drag-over');
+  });
+}
+
+function reorderTodos(fromId, toId) {
+  const visible = getVisibleTodos();
+  const fromIndex = visible.findIndex((task) => task.id === fromId);
+  const toIndex = visible.findIndex((task) => task.id === toId);
+  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+
+  const [moved] = visible.splice(fromIndex, 1);
+  visible.splice(toIndex, 0, moved);
+
+  const visibleIds = new Set(visible.map((task) => task.id));
+  const hidden = todos
+    .filter((task) => !visibleIds.has(task.id))
+    .sort((a, b) => a.order - b.order);
+
+  [...visible, ...hidden].forEach((task, index) => {
+    task.order = index;
+  });
+
+  currentSort = 'manual';
+  const sortSelect = document.getElementById('sort-select');
+  if (sortSelect) sortSelect.value = 'manual';
+
   refresh();
 }
 
@@ -216,6 +252,45 @@ function bindEvents() {
       pendingDeleteId = null;
       refresh();
     }
+  });
+
+  list.addEventListener('dragstart', (event) => {
+    const item = event.target.closest('.task-item');
+    if (!item || item.getAttribute('draggable') !== 'true') return;
+
+    dragId = item.dataset.id;
+    item.classList.add('task-item--dragging');
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', dragId);
+  });
+
+  list.addEventListener('dragend', (event) => {
+    const item = event.target.closest('.task-item');
+    if (item) item.classList.remove('task-item--dragging');
+    clearDragOver();
+    dragId = null;
+  });
+
+  list.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    const item = event.target.closest('.task-item');
+    if (!item || !dragId || item.dataset.id === dragId) return;
+
+    event.dataTransfer.dropEffect = 'move';
+    clearDragOver();
+    item.classList.add('task-item--drag-over');
+  });
+
+  list.addEventListener('drop', (event) => {
+    event.preventDefault();
+    const item = event.target.closest('.task-item');
+    clearDragOver();
+    if (!item || !dragId) return;
+
+    const targetId = item.dataset.id;
+    if (targetId === dragId) return;
+
+    reorderTodos(dragId, targetId);
   });
 }
 

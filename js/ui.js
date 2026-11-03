@@ -34,7 +34,12 @@ function createTaskElement(task, { editingId = null, pendingDeleteId = null } = 
   const isPendingDelete = pendingDeleteId === task.id;
 
   const item = createElement('li', {
-    className: `task-item${task.completed ? ' task-item--completed' : ''}${isEditing ? ' task-item--editing' : ''}`,
+    className: [
+      'task-item',
+      task.completed ? 'task-item--completed' : '',
+      isEditing ? 'task-item--editing' : '',
+      isPendingDelete ? 'task-item--pending-delete' : '',
+    ].filter(Boolean).join(' '),
     dataset: { id: task.id },
     attrs: {
       draggable: String(!isEditing && !isPendingDelete),
@@ -283,6 +288,7 @@ function renderApp() {
   });
 
   [
+    { label: 'свой порядок', value: 'manual' },
     { label: 'сначала новые', value: 'date-desc' },
     { label: 'сначала старые', value: 'date-asc' },
   ].forEach((opt) => {
