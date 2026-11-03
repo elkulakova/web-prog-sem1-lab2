@@ -22,6 +22,8 @@ function getVisibleTodos() {
     list = list.filter((task) => !task.completed);
   } else if (currentFilter === 'completed') {
     list = list.filter((task) => task.completed);
+  } else if (currentFilter === 'overdue') {
+    list = list.filter((task) => isOverdue(task));
   }
 
   const query = searchQuery.trim().toLowerCase();
@@ -30,6 +32,12 @@ function getVisibleTodos() {
   }
 
   list.sort((a, b) => {
+    if (currentSort === 'overdue-first') {
+      const overdueDiff = Number(isOverdue(b)) - Number(isOverdue(a));
+      if (overdueDiff !== 0) return overdueDiff;
+      return a.order - b.order;
+    }
+
     if (currentSort === 'manual') {
       return a.order - b.order;
     }

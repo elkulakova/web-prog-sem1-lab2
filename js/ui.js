@@ -1,3 +1,16 @@
+function isOverdue(task) {
+  if (task.completed || !task.date) return false;
+
+  const today = new Date();
+  const todayStr = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
+  ].join('-');
+
+  return task.date < todayStr;
+}
+
 function createElement(tag, { className, text, attrs = {}, dataset = {}, children = [] } = {}) {
   const el = document.createElement(tag);
 
@@ -37,6 +50,7 @@ function createTaskElement(task, { editingId = null, pendingDeleteId = null } = 
     className: [
       'task-item',
       task.completed ? 'task-item--completed' : '',
+      isOverdue(task) ? 'task-item--overdue' : '',
       isEditing ? 'task-item--editing' : '',
       isPendingDelete ? 'task-item--pending-delete' : '',
     ].filter(Boolean).join(' '),
@@ -269,6 +283,7 @@ function renderApp() {
     { label: 'все', value: 'all' },
     { label: 'активные', value: 'active' },
     { label: 'выполненные', value: 'completed' },
+    { label: 'просроченные', value: 'overdue' },
   ];
 
   filters.forEach((filter, index) => {
@@ -291,6 +306,7 @@ function renderApp() {
     { label: 'свой порядок', value: 'manual' },
     { label: 'сначала новые', value: 'date-desc' },
     { label: 'сначала старые', value: 'date-asc' },
+    { label: 'сначала просроченные', value: 'overdue-first' },
   ].forEach((opt) => {
     sortSelect.append(
       createElement('option', {

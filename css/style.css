@@ -144,7 +144,7 @@ button {
 
 .filter-group {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.4rem;
   width: 100%;
 }
@@ -239,6 +239,15 @@ button {
   color: #777;
 }
 
+.task-item--overdue .task-item__title,
+.task-item--overdue .task-item__date {
+  color: var(--danger);
+}
+
+.task-item--overdue .task-item__date {
+  font-weight: 600;
+}
+
 .task-item--editing {
   border-color: var(--accent);
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
@@ -307,6 +316,7 @@ button {
   .filter-group {
     grid-area: filters;
     width: auto;
+    grid-template-columns: repeat(4, minmax(0, auto));
   }
 
   .controls__sort {
